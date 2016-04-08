@@ -1,0 +1,4 @@
+bin/
+obj/
+NuGet.Config
+project.lock.json
