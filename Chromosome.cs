@@ -28,16 +28,10 @@ namespace MyFirstGeneticAlgorithm
         {
             get
             {
-                int i = sizeof(int) * 8; // byte size 
-                while (true)
-                {
-                    if ( (GeneValues.Length & (1 << i - 1)) != 0 )
-                    {
-                        break;
-                    }
-                    --i;
-                }
-                return i;
+                // 2^n = GeneValues count.
+                // n will tell us how many bits we need to encode each gene value.
+                var result = Math.Ceiling(Math.Log(GeneValues.Length) / Math.Log(2));
+                return (int) result;
             }
         }
         
@@ -60,7 +54,6 @@ namespace MyFirstGeneticAlgorithm
         /// <summary>
         /// Gene make up of the chromosome
         /// </summary>
-        /// <returns></returns>
         private byte[] _genes { get; set; }
         
         public Chromosome()
