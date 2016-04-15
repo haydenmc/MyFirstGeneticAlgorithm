@@ -15,6 +15,7 @@ namespace MyFirstGeneticAlgorithm
             Console.WriteLine($"Attempting to find equation that evaluates to {targetNumber}.");
             Console.WriteLine($"Bits per gene: {Chromosome.BitsPerGene} bits.");
             Console.WriteLine($"Chromosome size: {Chromosome.ChromosomeByteSize} bytes.");
+            Console.WriteLine($"Genes per chromosome: {Chromosome.GeneCount} genes.");
             for (var i = 0; i < 5; i++)
             {
                 var chromosome = new Chromosome();

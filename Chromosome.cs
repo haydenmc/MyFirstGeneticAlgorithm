@@ -52,6 +52,17 @@ namespace MyFirstGeneticAlgorithm
         }
         
         /// <summary>
+        /// Returns the actual gene count per chromosome
+        /// </summary>
+        public static int GeneCount
+        {
+            get
+            {
+                return (ChromosomeByteSize * 8) / BitsPerGene;
+            }
+        }
+        
+        /// <summary>
         /// Gene make up of the chromosome
         /// </summary>
         private byte[] _genes { get; set; }
@@ -68,7 +79,7 @@ namespace MyFirstGeneticAlgorithm
         /// </summary>
         public string ToBinaryString()
         {
-            return string.Join("", _genes.Select(g => Convert.ToString(g, 2).PadLeft(8, '0')));
+            return string.Join(" ", _genes.Select(g => Convert.ToString(g, 2).PadLeft(8, '0')));
         }
         
         /// <summary>
@@ -76,14 +87,15 @@ namespace MyFirstGeneticAlgorithm
         /// </summary>
         override public string ToString()
         {
-            byte[] currentBuffer = new byte[(BitsPerGene / 8) + 1]; 
             int currentByte = 0;
-            while (true)
+            // for each byte
+            for (var i = 0; i < _genes.Length; i++)
             {
-                int resultIndex = 0;
-                for (var i = 0; i < currentBuffer.Length; i++)
+                for (var j = 0; i < (int) Math.Ceiling(BitsPerGene / 8.0); i++)
                 {
-                    currentBuffer[i] = _genes[currentByte + i];
+                    int geneSegment = _genes[i];
+                    geneSegment = (geneSegment >> (BitsPerGene / 8) - (j + 1));
+                    geneSegment = geneSegment & ((1 << (BitsPerGene * j)) - 1);
                 }
             }
             throw new NotImplementedException();
