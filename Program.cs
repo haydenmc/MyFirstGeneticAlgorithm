@@ -12,15 +12,7 @@ namespace MyFirstGeneticAlgorithm
                 Console.WriteLine("Expecting number as first argument.");
                 return;
             }
-            Console.WriteLine($"Attempting to find equation that evaluates to {targetNumber}.");
-            Console.WriteLine($"Bits per gene: {Chromosome.BitsPerGene} bits.");
-            Console.WriteLine($"Chromosome size: {Chromosome.ChromosomeByteSize} bytes.");
-            Console.WriteLine($"Genes per chromosome: {Chromosome.GeneCount} genes.");
-            for (var i = 0; i < 5; i++)
-            {
-                var chromosome = new Chromosome();
-                Console.WriteLine($"Random chromosome: {chromosome.ToBinaryString()}.");
-            }
+            new Program(targetNumber).Start();
         }
         
         public double TargetNumber { get; private set; }
@@ -28,6 +20,19 @@ namespace MyFirstGeneticAlgorithm
         public Program(double targetNumber)
         {
             TargetNumber = targetNumber;
+        }
+        
+        public void Start()
+        {
+            Console.WriteLine($"Attempting to find equation that evaluates to {TargetNumber}.");
+            Console.WriteLine($"Bits per gene: {Chromosome.BitsPerGene} bits.");
+            Console.WriteLine($"Chromosome size: {Chromosome.ChromosomeByteSize} bytes.");
+            Console.WriteLine($"Genes per chromosome: {Chromosome.GeneCount} genes.");
+            for (var i = 0; i < 5; i++)
+            {
+                var chromosome = new Chromosome();
+                Console.WriteLine($"{chromosome.ToBinaryString()}\n\t{chromosome.ToString()} = {chromosome.Evaluate()}\n\tFitness: {EvaluateFitness(chromosome)}");
+            }
         }
         
         private double EvaluateFitness(Chromosome chromosome)

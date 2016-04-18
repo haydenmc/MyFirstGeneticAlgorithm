@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace MyFirstGeneticAlgorithm
 {
@@ -8,7 +10,7 @@ namespace MyFirstGeneticAlgorithm
         /// <summary>
         /// The minimum number of genes in each chromosome (will be increased to pad out to byte-even)
         /// </summary>
-        public const int MinChromosomeLength = 6;
+        public const int MinChromosomeLength = 8;
         
         /// <summary>
         /// Random instance
@@ -67,6 +69,34 @@ namespace MyFirstGeneticAlgorithm
         /// </summary>
         private byte[] _genes { get; set; }
         
+        public int[] Genes
+        {
+            get
+            {
+                int[] genes = new int[GeneCount];
+                for (var i = 0; i < GeneCount; i++)
+                {
+                    int geneIndex = 0;
+                    int byteIndex = (i * BitsPerGene) / 8;
+                    for (var j = 0; j < Math.Ceiling(BitsPerGene / 8.0); j++)
+                    {
+                        byte geneByte = _genes[byteIndex + j];
+                        byte geneOffset = (byte) ((i * BitsPerGene) % 8);
+                        if (8 / BitsPerGene > 0)
+                        {
+                            byte geneSegment = geneByte;
+                            geneSegment = (byte) (geneSegment >> (8 - (geneOffset + BitsPerGene)));
+                            geneSegment = (byte) (geneSegment & ((1 << BitsPerGene) - 1));
+                            geneByte = geneSegment;
+                        }
+                        geneIndex = geneIndex | ((int) geneByte << ((int) (Math.Ceiling(BitsPerGene / 8.0)) - (j + 1))* BitsPerGene);
+                    }
+                    genes[i] = geneIndex;
+                }
+                return genes;
+            }
+        }
+        
         public Chromosome()
         {
             // random chromosome
@@ -87,18 +117,7 @@ namespace MyFirstGeneticAlgorithm
         /// </summary>
         override public string ToString()
         {
-            int currentByte = 0;
-            // for each byte
-            for (var i = 0; i < _genes.Length; i++)
-            {
-                for (var j = 0; i < (int) Math.Ceiling(BitsPerGene / 8.0); i++)
-                {
-                    int geneSegment = _genes[i];
-                    geneSegment = (geneSegment >> (BitsPerGene / 8) - (j + 1));
-                    geneSegment = geneSegment & ((1 << (BitsPerGene * j)) - 1);
-                }
-            }
-            throw new NotImplementedException();
+            return string.Join(" ", Genes.Select(g => g < GeneValues.Length ? GeneValues[g] : ' '));
         }
         
         /// <summary>
@@ -107,48 +126,47 @@ namespace MyFirstGeneticAlgorithm
         /// <returns>The resulting double</returns>
         public double Evaluate()
         {
-            throw new NotImplementedException();
-            // double? result = null;
-            // for (var i = 0; i < _genes.Length; i++)
-            // {
-            //     // If we're an operator, apply operation
-            //     if (_genes[i].IsOperator)
-            //     {
-            //         // Ensure there is a number beyond this operator we can actually use
-            //         // And ensure we have something stored for the left side of the operation
-            //         if (result != null && (i + 1) < _genes.Length && !_genes[i + 1].IsOperator)
-            //         {
-            //             // Apply the operation
-            //             switch (_genes[i].Value)
-            //             {
-            //                 case '+':
-            //                     result = result + _genes[i + 1].Value;
-            //                     break;
-            //                 case '-':
-            //                     result = result - _genes[i + 1].Value;
-            //                     break;
-            //                 case '*':
-            //                     result = result * _genes[i + 1].Value;
-            //                     break;
-            //                 case '/':
-            //                     result = result / _genes[i + 1].Value; // TODO: Catch divide by zero
-            //                     break;
-            //             }
-            //             // Skip over number
-            //             i++;
-            //             continue;
-            //         }
-            //     }
-            //     else
-            //     {
-            //         // If we have nothing stored, grab the value
-            //         if (result == null)
-            //         {
-            //             result = _genes[i].Value;
-            //         }
-            //     }
-            // }
-            // return result == null ? 0 : (double)result;
+            var genes = Genes;
+            var stack = new Stack<double>();
+            for (var i = 0; i < genes.Length; i++)
+            {
+                var gene = genes[i];
+                if (gene >= GeneValues.Length)
+                {
+                    continue;
+                }
+                if (GeneValues[gene] == '+' || GeneValues[gene] == '-' || GeneValues[gene] == '*' || GeneValues[gene] == '/')
+                {
+                    if (stack.Count < 2)
+                    {
+                        continue; // Not enough operands
+                    }
+                    double result = 0;
+                    double right = stack.Pop();
+                    double left = stack.Pop();
+                    switch (GeneValues[gene])
+                    {
+                        case '+':
+                            result = left + right;
+                            break;
+                        case '-':
+                            result = left - right;
+                            break;
+                        case '*':
+                            result = left * right;
+                            break;
+                        case '/':
+                            result = left / right; // TODO: Catch divide by zero
+                            break;
+                    }
+                    stack.Push(result);
+                }
+                else
+                {
+                    stack.Push(char.GetNumericValue(GeneValues[gene]));
+                }
+            }
+            return stack.Skip(stack.Count - 1).FirstOrDefault();
         }
     }
 }
